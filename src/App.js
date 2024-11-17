@@ -15,7 +15,6 @@ function App() {
   const handleGeneratePlayers = () => {
     const id = parseYouTubeVideoId(videoUrl);
     if (id) {
-      // Generate unique YouTube video IDs for each player
       const ids = Array.from({ length: numPlayers }, () => id);
       setVideoIds(ids);
     }
@@ -37,7 +36,7 @@ function App() {
         <input
           type="number"
           min="1"
-          max="100"
+          max="50"
           placeholder="Number of Players"
           value={numPlayers}
           onChange={(e) => setNumPlayers(Number(e.target.value))}
@@ -53,16 +52,17 @@ function App() {
 
       <div className="mt-10 w-full flex flex-wrap justify-center gap-6">
         {videoIds.map((videoId, index) => (
-          <LiteYouTubeEmbed key={index} videoId={videoId} />
+          <LiteYouTubeEmbed key={index} videoId={videoId} delay={index * 5000} />
         ))}
       </div>
     </div>
   );
 }
 
-function LiteYouTubeEmbed({ videoId }) {
+function LiteYouTubeEmbed({ videoId, delay }) {
   const iframeRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -82,25 +82,38 @@ function LiteYouTubeEmbed({ videoId }) {
     return () => observer.disconnect();
   }, []);
 
+  // Delay loading to simulate different user interactions
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        setIsClicked(true);
+      }, delay); // Delay each player by the index delay
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible, delay]);
+
   return (
     <div
       ref={iframeRef}
       className="w-80 h-44 bg-gray-900 rounded-lg overflow-hidden shadow-lg transition duration-300 transform hover:scale-105"
     >
-      {isVisible ? (
+      {isVisible && isClicked ? (
         <iframe
           width="100%"
           height="100%"
-          src={`https://www.youtube.com/embed/${videoId}?rel=0&showinfo=1`}
+          src={`https://www.youtube.com/embed/${videoId}?rel=0&showinfo=1&autoplay=1`}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title={`YouTube video player for ${videoId}`}
         ></iframe>
       ) : (
-        <div className="text-white flex items-center justify-center h-full">
-          Loading...
-        </div>
+        <button
+          onClick={() => setIsClicked(true)}
+          className="text-white text-lg bg-blue-500 hover:bg-blue-600 w-full h-full"
+        >
+          Play Video
+        </button>
       )}
     </div>
   );
