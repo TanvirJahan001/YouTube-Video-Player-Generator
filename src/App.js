@@ -21,9 +21,9 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 flex flex-col items-center justify-center p-8">
       <div className="bg-white shadow-2xl rounded-2xl p-8 max-w-lg w-full">
-        <h1 className="text-3xl font-extrabold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
           YouTube Video Player Generator
         </h1>
         <input
@@ -31,7 +31,7 @@ function App() {
           placeholder="Enter YouTube URL"
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
-          className="border border-gray-300 rounded-lg w-full p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="border border-gray-300 rounded-lg w-full p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <input
           type="number"
@@ -40,11 +40,11 @@ function App() {
           placeholder="Number of Players"
           value={numPlayers}
           onChange={(e) => setNumPlayers(Number(e.target.value))}
-          className="border border-gray-300 rounded-lg w-full p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          className="border border-gray-300 rounded-lg w-full p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <button
           onClick={handleGeneratePlayers}
-          className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-300 transform hover:scale-105 shadow-lg"
+          className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-lg w-full transition duration-300 transform hover:scale-105 shadow-lg"
         >
           Generate Players
         </button>
@@ -52,7 +52,7 @@ function App() {
 
       <div className="mt-10 w-full flex flex-wrap justify-center gap-6">
         {videoIds.map((videoId, index) => (
-          <LiteYouTubeEmbed key={index} videoId={videoId} delay={index * 5000} />
+          <LiteYouTubeEmbed key={index} videoId={videoId} delay={index * 8000 + Math.random() * 5000} />
         ))}
       </div>
     </div>
@@ -63,54 +63,56 @@ function LiteYouTubeEmbed({ videoId, delay }) {
   const iframeRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [userAgent, setUserAgent] = useState("");
+  const [iframeStyles, setIframeStyles] = useState({});
+
+  // List of different user-agent strings to simulate different devices
+  const userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+  ];
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.1 }
-    );
-    if (iframeRef.current) {
-      observer.observe(iframeRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
+    // Randomly select a user-agent for each player
+    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+    setUserAgent(randomUserAgent);
 
-  // Delay loading to simulate different user interactions
-  useEffect(() => {
-    if (isVisible) {
-      const timer = setTimeout(() => {
-        setIsClicked(true);
-      }, delay); // Delay each player by the index delay
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, delay]);
+    // Randomize the iframe size to simulate different devices
+    const sizes = [
+      { width: "360px", height: "202px" },
+      { width: "640px", height: "360px" },
+      { width: "854px", height: "480px" },
+      { width: "1280px", height: "720px" },
+    ];
+    setIframeStyles(sizes[Math.floor(Math.random() * sizes.length)]);
+
+    // Delayed autoplay for each video
+    const timer = setTimeout(() => {
+      setIsClicked(true);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
 
   return (
-    <div
-      ref={iframeRef}
-      className="w-80 h-44 bg-gray-900 rounded-lg overflow-hidden shadow-lg transition duration-300 transform hover:scale-105"
-    >
-      {isVisible && isClicked ? (
+    <div className="flex flex-col items-center">
+      {isClicked ? (
         <iframe
-          width="100%"
-          height="100%"
+          ref={iframeRef}
+          style={iframeStyles}
           src={`https://www.youtube.com/embed/${videoId}?rel=0&showinfo=1&autoplay=1`}
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title={`YouTube video player for ${videoId}`}
+          sandbox="allow-scripts allow-same-origin"
         ></iframe>
       ) : (
         <button
           onClick={() => setIsClicked(true)}
-          className="text-white text-lg bg-blue-500 hover:bg-blue-600 w-full h-full"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
           Play Video
         </button>
