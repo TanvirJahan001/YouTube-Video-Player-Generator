@@ -13,7 +13,7 @@ A **React** application that allows you to dynamically generate multiple YouTube
 ## 🚀 Demo
 
 Check out the live demo here:  
-[YouTube Video Player Generator](https://TanvirJahan001.github.io/YouTube-Video-Player-Generator/)
+[YouTube Video Player Generator](https://youtube-video-player-generator-tanvirjahan001s-projects.vercel.app/)
 
 
 ## 🛠️ Technologies Used
